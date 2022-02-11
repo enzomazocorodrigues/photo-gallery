@@ -43,7 +43,7 @@ const Upload: React.FC<UploadProps> = ({ photo, loading, onCancel, onLoad, onUpl
             <Button onClick={selectImage}>
               Upload file
             </Button>
-            <span className="pt-2 text-gray-500 text-sm font-medium w-28 text-center">Or drag and drop your file here</span>
+            <span className="pt-4 text-gray-500 text-sm font-medium w-28 text-center">Or drag and drop your file here</span>
           </div>
           : <div className=" flex flex-col justify-center items-center border-4 border-dashed rounded-lg h-72 sm:h-96 w-96">
             <PhotographIcon className="w-28 h-28 text-gray-400 -rotate-12 mb-6" />
