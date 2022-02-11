@@ -1,12 +1,52 @@
-import type { NextPage } from 'next'
+import type { GetServerSideProps, NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 import Container from '../components/common/Container'
 import Header from '../components/common/Header'
-import Photo from '../components/photo/Photo'
+import Gallery from '../components/photo/Gallery'
 import Upload from '../components/photo/Upload'
+import { firebaseApp } from '../firebase/firebase'
+import { Photo } from '../types/photo/Photo'
 
 const Home: NextPage = () => {
+  const [gallery, setGallery] = useState<Photo[]>([]);
+  const [photoFile, setPhoto] = useState<File | null>(null);
+  const [uploading, setUploading] = useState<boolean>(false);
+
+  const listGallery = async (): Promise<void> => {
+    const photos = await firebaseApp.listAll();
+    setGallery([...photos]);
+  }
+
+  useEffect(() => {
+    const list = async () => await listGallery()
+    list()
+  }, [])
+
+  const loadPhoto = (photo: File) => {
+    setPhoto(photo);
+  }
+
+  const cancelPhoto = () => {
+    setPhoto(null);
+  }
+
+  const uploadPhoto = async () => {
+    if (photoFile) {
+      setUploading(true)
+      await firebaseApp.upload(photoFile);
+      setUploading(false)
+      setPhoto(null)
+      await listGallery()
+    }
+  }
+
+  const deletePhoto = async (photo: Photo) => {
+    await firebaseApp.remove(photo)
+    await listGallery()
+  }
+
   return (
     <>
       <Head>
@@ -16,14 +56,9 @@ const Home: NextPage = () => {
       </Head>
       <Header />
       <Container>
-        <Upload />
+        <Upload photo={photoFile} loading={uploading} onCancel={cancelPhoto} onLoad={loadPhoto} onUpload={uploadPhoto} />
       </Container>
-      <div className="py-6 px-4 bg-slate-50 border-t border-t-gray-300">
-        <h5 className="text-2xl tracking-tigh font-bold">Your photos</h5>
-        <div className="mt-8 flex flex-wrap justify-center">
-          {Array<undefined>(10).fill(undefined).map((_, i) => <Photo key={i} />)}
-        </div>
-      </div>
+      <Gallery gallery={gallery} onDelete={deletePhoto} />
     </>
   )
 }
